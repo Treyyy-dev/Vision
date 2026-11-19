@@ -5,6 +5,8 @@ A cel-shaded 4v4 samurai clan battle that runs in the browser.
 - **Lobby** with your equipped warrior, collection screens and a Play button
 - **Gacha** for 10 warriors and 10 swords across Common, Rare, Epic and Legendary
 - **Town map**: a walled Japanese town with houses you can walk into, a shrine, pagoda, market and zen garden; clans start at opposite gates and fight through the streets
+- **Rooftops**: climb ladders onto the roofs, fire a rope to the next house, balance across it and take it back
+- **Villagers**: six different townsfolk (farmer, monk, fisher, elder, brewer, naginata fighter) who attack both clans
 - **Combat**: 3-hit slash combo, guard-breaking heavy, block and parry, dash
 - Touch controls on phones, keyboard on desktop (WASD, J, K, L, Space, Q/E)
 
