@@ -8,7 +8,7 @@ A cel-shaded 4v4 samurai clan battle that runs in the browser.
 - **Rooftops**: climb ladders onto the roofs, fire a rope to the next house, balance across it and take it back
 - **Villagers**: six different townsfolk (farmer, monk, fisher, elder, brewer, naginata fighter) who attack both clans
 - **Combat**: 3-hit slash combo, guard-breaking heavy, block and parry, dash
-- Touch controls on phones, keyboard on desktop (WASD, J, K, L, Space, Q/E)
+- **Settings**: 30/60/120 fps, low/medium/high quality, and three control modes — keyboard & mouse, touch with a movable button layout, and controller (auto-detects Xbox or PlayStation, with rebindable buttons for each)
 
 ## Run it
 

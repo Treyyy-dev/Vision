@@ -104,6 +104,26 @@ body.fight #lobby{display:none}body:not(.fight) #ui{display:none}
 #explore{position:absolute;right:14px;bottom:112px;margin:0;font-size:16px;padding:9px 18px}
 #exitRoam{display:none;position:absolute;top:8px;left:50%;transform:translateX(-50%);margin:0;pointer-events:auto;font-size:15px;padding:8px 18px}
 body.roam #exitRoam{display:block}body.roam .ros,body.roam #mid{visibility:hidden}
+.set{max-width:720px;margin:0 auto;font-size:13px}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}
+.srow label{font-weight:800;letter-spacing:.5px}
+.seg{display:flex;border:2.5px solid #14101a;border-radius:9px;overflow:hidden;box-shadow:0 3px 0 #14101a}
+.seg button{font:inherit;font-weight:800;font-size:12px;color:#cfc8dc;background:#2b2440;border:0;border-right:2px solid #14101a;padding:9px 13px;cursor:pointer}
+.seg button:last-child{border-right:0}.seg button.on{background:#c8322f;color:#fff}
+.sbox{background:#231d30;border:2px solid #14101a;border-radius:10px;padding:10px 12px;margin:0 0 10px;line-height:1.7;font-size:12px;display:none}
+.sbox.show,.sbox:last-child{display:block}.sbox b{color:#ffe08a}
+.sbox .rw{display:flex;gap:8px;margin-top:8px}
+.sbox .rw button,#editBar button{font:inherit;font-weight:800;font-size:12px;color:#fff;background:#2b2440;border:2.5px solid #14101a;border-radius:8px;padding:9px 12px;box-shadow:0 3px 0 #14101a;cursor:pointer}
+.sbox .rw button:first-child,#layDone{background:#c8322f}
+#padStat{font-weight:700;color:#8fe3ff;margin-bottom:4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}.two h4{margin:0 0 6px;font-size:12px;color:#ffe08a}
+.bind{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:5px}
+.bind select{font:inherit;font-size:12px;font-weight:700;color:#fff;background:#2b2440;border:2px solid #14101a;border-radius:6px;padding:5px 6px;max-width:58%}
+body.notouch #stick,body.notouch #btns{display:none!important}
+#editBar{display:none;position:absolute;top:12px;left:50%;transform:translateX(-50%);align-items:center;gap:10px;background:rgba(15,12,22,.85);border:2px solid #14101a;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;pointer-events:auto;white-space:nowrap}
+body.edit #ui{display:block}body.edit #lobby,body.edit #top,body.edit #feed,body.edit #banner{display:none}
+body.edit #editBar{display:flex}body.edit #btns,body.edit #stick{display:block!important}
+body.edit .btn,body.edit #stick{outline:3px dashed #ffe08a;outline-offset:3px;pointer-events:auto;touch-action:none}body.edit #bC{display:flex!important}
 #over,#err{display:none}
 #app{position:fixed;left:0;top:0;width:100%;height:100%;overflow:hidden;transform-origin:0 0;--st:0px;--sr:0px;--sb:0px;--sl:0px;--ah:100vh}
 #probe{position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
@@ -131,6 +151,7 @@ body.rot .pbody{touch-action:none}
   <div id="feed"></div>
   <div id="banner"><div class="t brush" id="banT"></div><div class="s" id="banS"></div></div>
   <div id="stick"><div id="knob"></div></div>
+  <div id="editBar"><span>Drag the buttons where you want them</span><button id="layDone">Done</button><button id="layReset">Reset</button></div>
   <div id="btns">
     <div class="btn" id="bC"><span class="brush" id="bCk">登</span><small id="bCt">CLIMB</small></div>
     <div class="btn" id="bD"><span class="brush">疾</span><small>DASH</small></div>
@@ -141,7 +162,7 @@ body.rot .pbody{touch-action:none}
 </div>
 <div id="lobby">
   <div id="lTop"><div class="logo brush">VISION</div><div id="orbs">◆ <span id="orbN">0</span></div></div>
-  <div id="tabs"><button id="tW">WARRIORS</button><button id="tS">SWORDS</button><button id="tG">✦ SUMMON</button><button id="tH">?</button></div>
+  <div id="tabs"><button id="tW">WARRIORS</button><button id="tS">SWORDS</button><button id="tG">✦ SUMMON</button><button id="tSet">⚙ SETTINGS</button></div>
   <div id="lInfo"></div>
   <button class="go brush" id="play">PLAY</button>
 </div>
@@ -154,14 +175,20 @@ body.rot .pbody{touch-action:none}
     <div class="rw"><button id="gs1">Forge ×1 · 100 ◆</button><button class="ten" id="gs10">Forge ×10 · 900 ◆</button></div></div>
   <div class="rates">Rates: Legendary 3% · Epic 12% · Rare 30% · Common 55%<br>×10 guarantees a Rare or better · a Legendary is guaranteed within 40 pulls<br>Duplicates turn into orbs. Earn orbs by fighting: wins, losses and every opponent you cut down pay out.</div>
 </div></div>
-<div class="panel" id="ph"><div class="phead brush"><span>How to Play</span><span class="sp"></span><button id="xh">✕</button></div><div class="pbody"><div class="hint" style="margin:0 auto;font-size:13px">
-    <b>Left thumb</b> move · <b>drag right side</b> turn camera<br>
-    <b>斬 Slash</b> tap for a 3-hit combo<br><b>剛 Heavy</b> slow, breaks guards<br>
-    <b>防 Guard</b> hold to block, tap just before a hit to parry<br><b>疾 Dash</b> dodges through attacks<br>
-    <b>登 Climb</b> appears at a ladder — every house has two<br><b>縄 Rope</b> appears on a roof: fires a line to the house you face. Walk onto it to balance across, then <b>収 Take</b> it back at either end<br>
-    Villagers defend their town and attack both clans<br><br>
-    Keyboard: WASD · J slash · K heavy · L guard · Space dash · F climb/rope · Q/E camera<br><br>
-    4 v 4. Each clan starts at its own gate on opposite sides of town — hunt the other through the streets and houses. First clan to win 2 rounds takes the field. If you fall, you take over a surviving ally.
+<div class="panel" id="pset"><div class="phead brush"><span>Settings</span><span class="sp"></span><button id="xset">✕</button></div><div class="pbody"><div class="set">
+  <div class="srow"><label>Frame rate</label><div class="seg" id="sFps"><button data-v="30">30</button><button data-v="60">60</button><button data-v="120">120</button></div></div>
+  <div class="srow"><label>Quality</label><div class="seg" id="sQ"><button data-v="low">Low</button><button data-v="medium">Medium</button><button data-v="high">High</button></div></div>
+  <div class="srow"><label>Controls</label><div class="seg" id="sCtl"><button data-v="kbm">KB&amp;M</button><button data-v="mobile">Mobile</button><button data-v="pad">Controller</button></div></div>
+  <div class="sbox" id="cKbm"><b>Keyboard &amp; mouse</b><br>WASD move · drag the mouse to turn the camera (or Q / E)<br>Left click or J slash · middle click or K heavy · right click or L guard<br>Space dash · F climb / rope / take</div>
+  <div class="sbox" id="cMob"><b>Touch</b><br>Left thumb moves, drag the right side to turn the camera.<br>You can drag every button and the stick to wherever suits your hands.
+    <div class="rw"><button id="editLay">Move buttons</button><button id="resetLay">Reset layout</button></div></div>
+  <div class="sbox" id="cPad"><div class="srow"><label>Controller type</label><div class="seg" id="sPad"><button data-v="auto">Auto</button><button data-v="xbox">Xbox</button><button data-v="ps">PlayStation</button></div></div>
+    <div id="padStat"></div>Left stick moves, right stick turns the camera. Start or the Dash button begins a match from the lobby.
+    <div class="two"><div><h4>Xbox buttons</h4><div id="bindX"></div></div><div><h4>PlayStation buttons</h4><div id="bindP"></div></div></div>
+    <div class="rw"><button id="resetPad">Reset controller buttons</button></div></div>
+  <div class="sbox"><b>How it plays</b><br>4 v 4. Each clan starts at its own gate — hunt the other through the streets, houses and rooftops. First to win 2 rounds takes the field.<br>
+    斬 Slash: 3-hit combo · 剛 Heavy: breaks guards · 防 Guard: hold to block, tap just before a hit to parry · 疾 Dash: dodge<br>
+    登 Climb appears at a ladder · 縄 Rope appears on a roof and fires a line to the house you face · 収 Take pulls it back<br>Villagers attack both clans.</div>
 </div></div></div>
 <div id="reveal"><div class="grid" id="rv"></div><button class="go brush" id="rvOk">OK</button></div>
 <div id="toast"></div>
@@ -938,18 +965,23 @@ addEventListener('keydown',function(e){if(e.repeat)return;key[e.code]=true;if(e.
 addEventListener('keyup',function(e){key[e.code]=false;});
 var stickEl=$('stick'),knob=$('knob'),stickId=null,sx0=0,sy0=0,camId=null,cx0=0,cy0=0;
 function placeStick(x,y){stickEl.style.display='block';stickEl.style.left=(x-60)+'px';stickEl.style.top=(y-60)+'px';stickEl.style.bottom='auto';}
+function stickCenter(){var r=stickEl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;return rot?[cy,innerWidth-cx]:[cx,cy];}
+function stickMove(e){var dx=PX(e)-sx0,dy=PY(e)-sy0,m=Math.hypot(dx,dy),R=48;if(m>R){dx*=R/m;dy*=R/m;}jx=dx/R;jy=-dy/R;knob.style.transform='translate('+dx+'px,'+dy+'px)';}
 canvas.addEventListener('pointerdown',function(e){initAudio();
-  if(e.pointerType!=='mouse'&&PX(e)<appW*.45&&stickId===null){stickId=e.pointerId;sx0=PX(e);sy0=PY(e);placeStick(sx0,sy0);}
+  if(e.pointerType==='mouse'){mDown=e.button;mMoved=0;if(e.button===2)blockHeld=true;}
+  if(e.pointerType!=='mouse'&&PX(e)<appW*.45&&stickId===null){stickId=e.pointerId;if(S.lay.stick){var sc=stickCenter();sx0=sc[0];sy0=sc[1];stickMove(e);}else{sx0=PX(e);sy0=PY(e);placeStick(sx0,sy0);}}
   else if(camId===null){camId=e.pointerId;cx0=PX(e);cy0=PY(e);}
   try{canvas.setPointerCapture(e.pointerId);}catch(_){}});
 canvas.addEventListener('pointermove',function(e){
-  if(e.pointerId===stickId){var dx=PX(e)-sx0,dy=PY(e)-sy0,m=Math.hypot(dx,dy),R=48;if(m>R){dx*=R/m;dy*=R/m;}jx=dx/R;jy=-dy/R;knob.style.transform='translate('+dx+'px,'+dy+'px)';}
-  else if(e.pointerId===camId){camYaw-=(PX(e)-cx0)*.0065;camPitch=Math.max(.06,Math.min(.95,camPitch+(PY(e)-cy0)*.004));cx0=PX(e);cy0=PY(e);}});
-function pUp(e){if(e.pointerId===stickId){stickId=null;jx=jy=0;knob.style.transform='';}if(e.pointerId===camId)camId=null;}
+  if(e.pointerId===stickId)stickMove(e);
+  else if(e.pointerId===camId){if(e.pointerType==='mouse')mMoved+=Math.abs(PX(e)-cx0)+Math.abs(PY(e)-cy0);camYaw-=(PX(e)-cx0)*.0065;camPitch=Math.max(.06,Math.min(.95,camPitch+(PY(e)-cy0)*.004));cx0=PX(e);cy0=PY(e);}});
+function pUp(e){if(e.pointerId===stickId){stickId=null;jx=jy=0;knob.style.transform='';}if(e.pointerId===camId)camId=null;
+  if(e.pointerType==='mouse'){if(mDown===2)blockHeld=false;else if(mDown===0&&mMoved<6&&S.ctl==='kbm')press.attack=true;else if(mDown===1)press.heavy=true;mDown=-1;}}
 canvas.addEventListener('pointerup',pUp);canvas.addEventListener('pointercancel',pUp);
 canvas.addEventListener('contextmenu',function(e){e.preventDefault();});
+var editing=false,mDown=-1,mMoved=0,padMX=0,padMY=0,padBlock=false,padPrev=[],padKind='xbox',padOn=false;
 function bindBtn(id,down,up){var el=$(id);
-  el.addEventListener('pointerdown',function(e){e.preventDefault();initAudio();el.classList.add('on');try{el.setPointerCapture(e.pointerId);}catch(_){}down();});
+  el.addEventListener('pointerdown',function(e){e.preventDefault();if(editing)return;initAudio();el.classList.add('on');try{el.setPointerCapture(e.pointerId);}catch(_){}down();});
   var u=function(){el.classList.remove('on');if(up)up();};
   el.addEventListener('pointerup',u);el.addEventListener('pointercancel',u);el.addEventListener('contextmenu',function(e){e.preventDefault();});}
 bindBtn('bA',function(){press.attack=true;});bindBtn('bH',function(){press.heavy=true;});bindBtn('bD',function(){press.dash=true;});
@@ -957,10 +989,10 @@ bindBtn('bB',function(){blockHeld=true;},function(){blockHeld=false;});
 bindBtn('bC',function(){press.ctx=true;});
 if(matchMedia('(pointer:coarse)').matches)stickEl.style.display='block';
 function playerInput(f){
-  var x=jx,y=jy;if(key.KeyW||key.ArrowUp)y+=1;if(key.KeyS||key.ArrowDown)y-=1;if(key.KeyD||key.ArrowRight)x+=1;if(key.KeyA||key.ArrowLeft)x-=1;
+  var x=jx+padMX,y=jy+padMY;if(key.KeyW||key.ArrowUp)y+=1;if(key.KeyS||key.ArrowDown)y-=1;if(key.KeyD||key.ArrowRight)x+=1;if(key.KeyA||key.ArrowLeft)x-=1;
   var m=Math.hypot(x,y);if(m>1){x/=m;y/=m;m=1;}
   var fs=Math.sin(camYaw),fc=Math.cos(camYaw),mx=fs*y-fc*x,mz=fc*y+fs*x,act=m>.14;
-  var inp={mx:act?mx:0,mz:act?mz:0,attack:press.attack,heavy:press.heavy,dash:press.dash,block:!!(blockHeld||key.KeyL||key.ShiftLeft||key.ShiftRight)};
+  var inp={mx:act?mx:0,mz:act?mz:0,attack:press.attack,heavy:press.heavy,dash:press.dash,block:!!(blockHeld||padBlock||key.KeyL||key.ShiftLeft||key.ShiftRight)};
   lockT=softTarget(f,act?Math.atan2(mx,mz):f.yaw,5.8);inp.target=lockT;
   if(inp.block&&lockT)inp.face=angTo(f,lockT);
   if(press.ctx){var c=ctxFor(f);if(c){if(c.type==='climb')inp.climb=c.ladder;else if(c.type==='rope')shootRope(f,c.c);else takeRope(c.rope);}}
@@ -1054,8 +1086,8 @@ function pull(kind,n){
   refreshLobby();}
 function showHouses(){houses.forEach(function(h){h.roof.visible=true;for(var k in h.sides)h.sides[k].visible=true;});}
 function enterLobby(){mode='lobby';document.body.classList.remove('fight');document.body.classList.remove('roam');showHouses();resetRound();fighters[0].pos.set(0,0,34.5);refreshLobby();}
-[['tW','pw'],['tS','ps'],['tG','pg'],['tH','ph']].forEach(function(p){$(p[0]).addEventListener('click',function(){$(p[1]).classList.add('open');});});
-[['xw','pw'],['xs','ps'],['xg','pg'],['xh','ph']].forEach(function(p){$(p[0]).addEventListener('click',function(){$(p[1]).classList.remove('open');});});
+[['tW','pw'],['tS','ps'],['tG','pg'],['tSet','pset']].forEach(function(p){$(p[0]).addEventListener('click',function(){$(p[1]).classList.add('open');});});
+[['xw','pw'],['xs','ps'],['xg','pg'],['xset','pset']].forEach(function(p){$(p[0]).addEventListener('click',function(){$(p[1]).classList.remove('open');});});
 $('gw1').addEventListener('click',function(){pull('w',1);});$('gw10').addEventListener('click',function(){pull('w',10);});
 $('gs1').addEventListener('click',function(){pull('s',1);});$('gs10').addEventListener('click',function(){pull('s',10);});
 $('rvOk').addEventListener('click',function(){$('reveal').style.display='none';});
@@ -1068,6 +1100,51 @@ Array.prototype.forEach.call(document.querySelectorAll('.pbody'),function(el){va
   el.addEventListener('click',function(e){if(rot&&moved>10){e.stopPropagation();e.preventDefault();}moved=0;},true);});
 (function(){var fw=$('featW'),fs=$('featS');WARRIORS.forEach(function(w){if(w.r>=2){var i=document.createElement('img');i.src=PORT[w.id]||'';i.alt=w.name;fw.appendChild(i);}});
   SWORDS.forEach(function(s){if(s.r>=2){var i=document.createElement('img');i.src=PORT[s.id]||'';i.alt=s.name;fs.appendChild(i);}});})();
+/* ---------- settings: frame rate, quality, controls ---------- */
+var PADDEF={attack:2,heavy:3,block:5,dash:0,ctx:1};
+var S=save.set=(function(o){var d={fps:60,q:'high',ctl:matchMedia('(pointer:coarse)').matches?'mobile':'kbm',pad:'auto',lay:{},bindX:{},bindP:{}},k;
+  for(k in o)d[k]=o[k];for(k in PADDEF){if(d.bindX[k]===undefined)d.bindX[k]=PADDEF[k];if(d.bindP[k]===undefined)d.bindP[k]=PADDEF[k];}if(!d.lay)d.lay={};return d;})(save.set||{});
+var XBN=['A','B','X','Y','LB','RB','LT','RT','View','Menu','Left stick click','Right stick click','D-pad up','D-pad down','D-pad left','D-pad right'],
+    PSN=['Cross ✕','Circle ○','Square □','Triangle △','L1','R1','L2','R2','Create','Options','L3','R3','D-pad up','D-pad down','D-pad left','D-pad right'],
+    ACTS=[['attack','Slash'],['heavy','Heavy'],['block','Guard'],['dash','Dash'],['ctx','Climb / Rope']],LAYIDS=['bA','bH','bB','bD','bC','stick'];
+function applyQuality(){var pr=S.q==='low'?1:S.q==='medium'?1.5:2;renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,pr));INK.visible=S.q!=='low';petals.visible=S.q!=='low';resize();}
+function applyLayout(){LAYIDS.forEach(function(id){var o=S.lay[id];$(id).style.translate=o?o[0]+'px '+o[1]+'px':'';});
+  if(S.lay.stick){stickEl.style.left='';stickEl.style.top='';stickEl.style.bottom='';stickEl.style.display='block';}}
+function applyControls(){document.body.classList.toggle('notouch',S.ctl!=='mobile');$('cKbm').classList.toggle('show',S.ctl==='kbm');$('cMob').classList.toggle('show',S.ctl==='mobile');$('cPad').classList.toggle('show',S.ctl==='pad');
+  if(S.ctl==='mobile')stickEl.style.display='block';}
+function segInit(id,key,after){var box=$(id),bs=box.querySelectorAll('button');function paint(){Array.prototype.forEach.call(bs,function(b){b.classList.toggle('on',b.getAttribute('data-v')===String(S[key]));});}
+  Array.prototype.forEach.call(bs,function(b){b.addEventListener('click',function(){var v=b.getAttribute('data-v');S[key]=key==='fps'?parseInt(v,10):v;persist();paint();if(after)after();});});paint();}
+function padStatus(){var kind=S.pad==='auto'?padKind:S.pad,nm=kind==='ps'?'PlayStation':'Xbox';
+  $('padStat').textContent=padOn?(S.pad==='auto'?'Detected: '+nm+' controller':'Controller connected · using '+nm+' buttons'):'No controller found yet — connect one and press any button on it';}
+function buildBinds(){[['bindX','bindX',XBN],['bindP','bindP',PSN]].forEach(function(t){var box=$(t[0]);box.innerHTML='';
+  ACTS.forEach(function(a){var row=document.createElement('div');row.className='bind';var lb=document.createElement('span');lb.textContent=a[1];var sel=document.createElement('select');
+    t[2].forEach(function(n,i){var o=document.createElement('option');o.value=i;o.textContent=n;sel.appendChild(o);});sel.value=S[t[1]][a[0]];
+    sel.addEventListener('change',function(){S[t[1]][a[0]]=parseInt(sel.value,10);persist();});row.appendChild(lb);row.appendChild(sel);box.appendChild(row);});});}
+segInit('sFps','fps');segInit('sQ','q',applyQuality);segInit('sCtl','ctl',applyControls);segInit('sPad','pad',padStatus);
+buildBinds();applyQuality();applyLayout();applyControls();padStatus();
+$('resetPad').addEventListener('click',function(){for(var k in PADDEF){S.bindX[k]=PADDEF[k];S.bindP[k]=PADDEF[k];}persist();buildBinds();toast('Controller buttons reset');});
+function setEdit(on){editing=on;document.body.classList.toggle('edit',on);if(on)$('pset').classList.remove('open');else persist();}
+$('editLay').addEventListener('click',function(){setEdit(true);});$('layDone').addEventListener('click',function(){setEdit(false);});
+function resetLayout(){S.lay={};persist();applyLayout();toast('Layout reset');}
+$('resetLay').addEventListener('click',resetLayout);$('layReset').addEventListener('click',resetLayout);
+LAYIDS.forEach(function(id){var el=$(id),pid=null,x0=0,y0=0,o0=null;
+  el.addEventListener('pointerdown',function(e){if(!editing)return;e.preventDefault();e.stopPropagation();pid=e.pointerId;x0=PX(e);y0=PY(e);o0=S.lay[id]||[0,0];try{el.setPointerCapture(pid);}catch(_){}});
+  el.addEventListener('pointermove',function(e){if(!editing||e.pointerId!==pid)return;S.lay[id]=[Math.round(o0[0]+PX(e)-x0),Math.round(o0[1]+PY(e)-y0)];el.style.translate=S.lay[id][0]+'px '+S.lay[id][1]+'px';});
+  var up=function(e){if(e.pointerId===pid)pid=null;};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);});
+function dead(v){v=v||0;return Math.abs(v)<.18?0:v;}
+function pollPad(dt){
+  var gp=null,i;try{var l=navigator.getGamepads?navigator.getGamepads():[];for(i=0;i<l.length;i++)if(l[i]&&l[i].connected){gp=l[i];break;}}catch(e){}
+  if(!gp){if(padOn){padOn=false;padStatus();}padMX=padMY=0;padBlock=false;return;}
+  var id=(gp.id||'').toLowerCase(),kd=/playstation|dualsense|dualshock|sony|054c|ps4|ps5/.test(id)?'ps':'xbox';
+  if(!padOn||kd!==padKind){padOn=true;padKind=kd;padStatus();toast((kd==='ps'?'PlayStation':'Xbox')+' controller connected');}
+  var B=(S.pad==='auto'?padKind:S.pad)==='ps'?S.bindP:S.bindX,bt=gp.buttons,ax=gp.axes;
+  function down(n){var b=bt[n];return !!b&&(b.pressed||b.value>.5);}
+  function edge(n){return down(n)&&!padPrev[n];}
+  padMX=dead(ax[0]);padMY=-dead(ax[1]);camYaw-=dead(ax[2])*2.8*dt;camPitch=Math.max(.06,Math.min(.95,camPitch+dead(ax[3])*1.6*dt));
+  if(edge(B.attack))press.attack=true;if(edge(B.heavy))press.heavy=true;if(edge(B.dash))press.dash=true;if(edge(B.ctx))press.ctx=true;padBlock=down(B.block);
+  if((edge(9)||edge(B.dash))&&!editing&&!document.querySelector('.panel.open')&&$('reveal').style.display!=='flex'){
+    if(mode==='lobby'){initAudio();startMatch();}else if(mode==='over'){$('over').style.display='none';startMatch();}}
+  for(i=0;i<bt.length;i++)padPrev[i]=down(i);}
 applyHero();
 
 /* ---------- markers ---------- */
@@ -1094,11 +1171,13 @@ function update(dt){
   for(i=0;i<fighters.length;i++)for(j=i+1;j<fighters.length;j++){var a=fighters[i],b=fighters[j];if(!a.alive||!b.alive||Math.abs(a.y-b.y)>1||a.rope||b.rope||a.state==='climb'||b.state==='climb')continue;
     var dx=b.pos.x-a.pos.x,dz=b.pos.z-a.pos.z,dd=Math.hypot(dx,dz);if(dd<.85&&dd>.001){var p=(.85-dd)/2/dd;a.pos.x-=dx*p;a.pos.z-=dz*p;b.pos.x+=dx*p;b.pos.z+=dz*p;if(!a.on)collide(a);if(!b.on)collide(b);}}
 }
+var lastDraw=0;
 function frame(now){
   requestAnimationFrame(frame);
+  if(S.fps<120){if(now-lastDraw<1000/S.fps-2)return;lastDraw=now;}
   var dt=Math.min(.05,(now-last)/1000);last=now;time+=dt;
   var gdt=dt;if(hitStop>0){hitStop-=dt;gdt=dt*.04;}
-  if(key.KeyQ)camYaw+=2.2*dt;if(key.KeyE)camYaw-=2.2*dt;
+  if(key.KeyQ)camYaw+=2.2*dt;if(key.KeyE)camYaw-=2.2*dt;pollPad(dt);
   update(gdt);
   // fx
   for(var i=fx.length-1;i>=0;i--){var e=fx[i];e.t+=dt;var k=Math.min(1,e.t/e.d);e.u(k);if(k>=1){scene.remove(e.o);e.o.material.dispose();if(e.geo)e.o.geometry.dispose();fx.splice(i,1);}}
