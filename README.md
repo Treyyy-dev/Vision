@@ -10,9 +10,26 @@ A cel-shaded 4v4 samurai clan battle that runs in the browser.
 - **Combat**: 3-hit slash combo, guard-breaking heavy, block and parry, dash
 - **Settings**: 30/60/120 fps, low/medium/high quality, and three control modes — keyboard & mouse, touch with a movable button layout, and controller (auto-detects Xbox or PlayStation, with rebindable buttons for each)
 
+## Online multiplayer
+
+`server.js` serves the game and relays room messages over WebSocket. It has no dependencies.
+
+- One player creates a room and shares the 4-letter code; up to 8 players join and are split across the two clans. Empty spots are computer fighters.
+- The host's game runs the match; everyone else sends inputs and receives the state.
+
+### Deploy on Render
+
+1. On render.com choose **New → Blueprint** and connect this repository. `render.yaml` sets everything up.
+   (Or **New → Web Service**: runtime Node, build command empty, start command `node server.js`.)
+2. Open the `…onrender.com` address Render gives you. That page is the game; press **Online** in the lobby.
+
+On the free plan the server sleeps when idle, so the first visit can take about a minute to wake it.
+
+Run it locally with `node server.js` and open http://localhost:3000.
+
 ## Run it
 
-The whole game is one file. Open `index.html` in a browser, or serve the folder with any static host.
+Single-player needs only `index.html`: open it in a browser, or serve the folder with any static host.
 It loads three.js r128 and a font from public CDNs, so it needs an internet connection.
 
 Progress (orbs and collection) is saved in the browser's local storage.
