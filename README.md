@@ -12,10 +12,11 @@ A cel-shaded 4v4 samurai clan battle that runs in the browser.
 
 ## Online multiplayer
 
-`server.js` serves the game and relays room messages over WebSocket. It has no dependencies.
+`server.js` serves the game, matches players together and referees each match. It has no dependencies.
 
-- One player creates a room and shares the 4-letter code; up to 8 players join and are split across the two clans. Empty spots are computer fighters.
-- The host's game runs the match; everyone else sends inputs and receives the state.
+- Press **Online → Find match**. Once two players are searching, a 10-second countdown starts and everyone searching (up to 8) is put in one match, split across the two clans. Empty spots are computer fighters.
+- The match runs on the server, which loads the game's own script from `index.html` without a screen, so the rules can never drift apart. Every player sends inputs and receives the same state 20 times a second.
+- Your own movement, slashes and dashes are shown at once on your screen and then corrected against the server.
 
 ### Deploy on Render
 

@@ -199,16 +199,14 @@ body.rot .pbody{touch-action:none}
 <div class="panel" id="pon"><div class="phead brush"><span>Online</span><span class="sp"></span><button id="xon">✕</button></div><div class="pbody"><div class="set">
   <div id="onStat"></div>
   <div id="onA">
-    <div class="srow"><label>Your name</label><input id="onName" maxlength="12" placeholder="Player"></div>
-    <div class="sbox show"><b>Host a room</b><br>Create a room and share its 4-letter code. Up to 8 players; empty spots are filled by computer fighters.<div class="rw"><button id="onCreate">Create room</button></div></div>
-    <div class="sbox show"><b>Join a room</b><div class="rw"><button id="onJoin">Join</button><input id="onCode" maxlength="4" placeholder="CODE" autocapitalize="characters" autocomplete="off"></div></div>
+    <div class="srow"><label>Your name</label><input id="onName" maxlength="12" placeholder="Player" autocomplete="off"></div>
+    <div class="sbox show"><b>Matchmaking</b><br>Find Match puts you in with whoever else is searching — up to 4 v 4, split across the two clans. Open spots are filled by computer fighters, and you bring your equipped warrior and sword.<div class="rw"><button id="onFind">Find match</button></div></div>
     <div class="sbox show"><b>Server</b><br>Leave this blank when you opened the game from its Render address.<div class="rw"><input id="onSrv" placeholder="your-app.onrender.com" autocomplete="off" style="flex:1;width:auto"></div></div>
   </div>
   <div id="onB" style="display:none">
-    <div class="code brush">ROOM <span id="onCodeV"></span></div>
-    <div class="two"><div><h4 style="color:#4f8cff">AZURE CLAN</h4><div id="onT0"></div></div><div><h4 style="color:#ff5a4f">CRIMSON CLAN</h4><div id="onT1"></div></div></div>
-    <div id="onWait"></div>
-    <div class="sbox show"><div class="rw"><button id="onStart">Start match</button><button id="onSwap">Switch clan</button><button id="onLeave">Leave room</button></div></div>
+    <div class="code brush">SEARCHING…</div>
+    <div id="onQ" style="text-align:center;font-weight:700;color:#8fe3ff;margin-bottom:12px"></div>
+    <div class="sbox show"><div class="rw"><button id="onCancel">Cancel</button></div></div>
   </div>
 </div></div></div>
 <div id="reveal"><div class="grid" id="rv"></div><button class="go brush" id="rvOk">OK</button></div>
@@ -760,12 +758,12 @@ function resetRound(){
     f.isPlayer=false;f.human=false;f.windMul=1.6;f.bar.visible=true;f.rig.shadow.visible=true;f.rig.root.visible=true;
     var g=POSE.guard;for(var i=0;i<KEYS.length;i++)f.pose[KEYS[i]]=g[KEYS[i]];
   });
-  setPlayer(fighters[net.on?net.slot:0]);player.human=true;fighters.forEach(function(f){if(f.net){f.human=true;f.windMul=1/f.atkSpd;}});camYaw=player.team?0:PI;camPitch=.3;camSnap=true;
+  setPlayer(fighters[net.on?net.slot:0]);player.human=true;if(net.headless){player.human=false;player.windMul=1.6;}fighters.forEach(function(f){if(f.net){f.human=true;f.windMul=1/f.atkSpd;}});camYaw=player.team?0:PI;camPitch=.3;camSnap=true;
 }
 function setPlayer(f){if(player){player.isPlayer=false;player.windMul=1.6;}player=f;f.isPlayer=true;f.windMul=1/f.atkSpd;$('meName').textContent=f.name.toUpperCase();}
 
 /* ---------- fx ---------- */
-var net={on:false,host:false,guest:false,playing:false,slot:0,ws:null,id:0,code:'',slots:[]},netEv=[],lastW=0,lastVolF=null;
+var net={on:false,host:false,guest:false,playing:false,queue:false,headless:false,qn:0,eta:null,slot:0,ws:null,id:0,code:'',slots:[]},netEv=[],lastW=0,lastVolF=null;
 function r2(v){return Math.round(v*100)/100;}
 var fx=[];
 var starTex=(function(){var c=document.createElement('canvas');c.width=c.height=128;var g=c.getContext('2d');g.translate(64,64);g.fillStyle='#fff';g.beginPath();var n=10;
@@ -1044,8 +1042,8 @@ function banner(t,s,ms,small){$('banT').textContent=t;$('banS').textContent=s||'
 
 /* ---------- flow ---------- */
 function showOver(ko){var bw=score[0]>=2,w=bw===(player.team===0);$('overT').textContent=w?'VICTORY':'DEFEAT';$('overS').textContent=(bw?'AZURE':'CRIMSON')+' CLAN WINS  '+score[0]+' – '+score[1];
-  var rw=(w?300:120)+ko*25;save.orbs+=rw;persist();$('overR').textContent='+'+rw+' ◆ orbs'+(ko?'  ·  '+ko+' cut down':'');$('again').style.display=net.guest?'none':'';$('over').style.display='flex';}
-function againMatch(){if(net.guest)return;$('over').style.display='none';if(net.host)netStart();else startMatch();}
+  var rw=(w?300:120)+ko*25;save.orbs+=rw;persist();$('overR').textContent='+'+rw+' ◆ orbs'+(ko?'  ·  '+ko+' cut down':'');$('again').textContent=net.on?'Find Match':'Fight Again';$('over').style.display='flex';}
+function againMatch(){$('over').style.display='none';if(net.on){netLeave();$('pon').classList.add('open');findMatch();}else startMatch();}
 function startMatch(){score=[0,0];round=1;matchKO=0;fighters.forEach(function(f){f.kos=0;});document.body.classList.add('fight');startRound();}
 function startRound(){resetRound();mode='intro';modeT=2.3;drawScore();banner('Round '+round,'AZURE CLAN  vs  CRIMSON CLAN',1500);SFX.drum();}
 function checkRound(){
@@ -1124,7 +1122,7 @@ function enterLobby(){mode='lobby';document.body.classList.remove('fight');docum
 $('gw1').addEventListener('click',function(){pull('w',1);});$('gw10').addEventListener('click',function(){pull('w',10);});
 $('gs1').addEventListener('click',function(){pull('s',1);});$('gs10').addEventListener('click',function(){pull('s',10);});
 $('rvOk').addEventListener('click',function(){$('reveal').style.display='none';});
-$('play').addEventListener('click',function(){initAudio();if(net.on){$('pon').classList.add('open');return;}goFull(false);startMatch();});
+$('play').addEventListener('click',function(){initAudio();if(net.on||net.queue){renderOnline();$('pon').classList.add('open');return;}goFull(false);startMatch();});
 // drag-to-scroll for panels when the view is rotated (native scrolling follows the screen, not the rotated page)
 Array.prototype.forEach.call(document.querySelectorAll('.pbody'),function(el){var id=null,y0=0,moved=0;
   el.addEventListener('pointerdown',function(e){if(!rot)return;id=e.pointerId;y0=PY(e);moved=0;});
@@ -1176,58 +1174,47 @@ function pollPad(dt){
   padMX=dead(ax[0]);padMY=-dead(ax[1]);camYaw-=dead(ax[2])*2.8*dt;camPitch=Math.max(.06,Math.min(.95,camPitch+dead(ax[3])*1.6*dt));
   if(edge(B.attack))press.attack=true;if(edge(B.heavy))press.heavy=true;if(edge(B.dash))press.dash=true;if(edge(B.ctx))press.ctx=true;padBlock=down(B.block);
   if((edge(9)||edge(B.dash))&&!editing&&!document.querySelector('.panel.open')&&$('reveal').style.display!=='flex'){
-    if(mode==='lobby'){if(!net.on){initAudio();startMatch();}}else if(mode==='over')againMatch();}
+    if(mode==='lobby'){if(!net.on&&!net.queue){initAudio();startMatch();}}else if(mode==='over')againMatch();}
   for(i=0;i<bt.length;i++)padPrev[i]=down(i);}
 applyHero();
 
-/* ---------- online play (rooms relayed by server.js; the host's game runs the match) ---------- */
+/* ---------- online play: matchmaking. The match itself runs on the server, which loads this same file without a screen ---------- */
 var STN=['idle','block','attack','stun','dash','dead','climb','rope'],netLastSnap=0,netLastIn=0,netRo='',netMode='';
 function viewF(){if(net.on&&player&&!player.alive)for(var i=0;i<8;i++){var f=fighters[i];if(f.team===player.team&&f.alive)return f;}return player;}
 function onStatus(t){$('onStat').textContent=t||'';}
 function netUrl(){var u=String(save.srv||'').trim();if(u){u=u.replace(/^http/,'ws').replace(/\/+$/,'');if(!/^wss?:\/\//.test(u))u='wss://'+u;return /\/ws$/.test(u)?u:u+'/ws';}
   return (location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws';}
-function netSend(to,d){try{net.ws.send(JSON.stringify({t:'to',to:to,d:d}));}catch(e){}}
+var netSend=function(to,d){};
+function wsSend(o){try{net.ws.send(JSON.stringify(o));}catch(e){}}
 function myInfo(){return {name:String(save.pname||'Player').slice(0,12),w:save.selW,s:save.selS};}
-function netReset(){var ws=net.ws;net.ws=null;net.on=net.host=net.guest=net.playing=false;net.slots=[];net.code='';netEv.length=0;fighters.forEach(function(f){f.net=null;});if(ws)try{ws.close();}catch(e){}}
-function backToLobby(){$('over').style.display='none';for(var i=1;i<8;i++)applyDefault(fighters[i]);applyHero();enterLobby();}
-function netLeave(){if(net.ws)try{net.ws.send(JSON.stringify({t:'leave'}));}catch(e){}var was=net.on;netReset();if(was)backToLobby();renderRoom();}
+function cleanInfo(inf,id){inf=inf||{};return {id:id,name:String(inf.name||'Player').slice(0,12),w:String(inf.w||'kaito').slice(0,20),s:String(inf.s||'iron').slice(0,20)};}
+function netReset(){var ws=net.ws;net.ws=null;net.on=net.host=net.guest=net.playing=net.queue=false;net.slots=[];fighters.forEach(function(f){f.net=null;f.ps=null;f.pd=null;});if(ws)try{ws.close();}catch(e){}}
+function backToLobby(){$('over').style.display='none';fighters.forEach(function(f){f.ps=null;f.pd=null;});for(var i=1;i<8;i++)applyDefault(fighters[i]);applyHero();enterLobby();}
+function netLeave(){var was=net.on;if(net.ws)wsSend({t:'leave'});net.on=net.guest=net.playing=net.queue=false;if(was)backToLobby();renderOnline();}
 function netConnect(then){
-  if(net.ws)return;onStatus('Connecting…');var ws,opened=false;
+  if(net.ws&&net.ws.readyState===1){then();return;}if(net.ws)return;
+  onStatus('Connecting…');var ws,opened=false;
   try{ws=new WebSocket(netUrl());}catch(e){onStatus('Online play is not available from this page. Open the game from its Render address.');return;}
   net.ws=ws;
-  ws.onopen=function(){opened=true;then();};
+  ws.onopen=function(){opened=true;onStatus('');then();};
   ws.onerror=function(){};
-  ws.onclose=function(){if(net.ws!==ws)return;var was=net.on;netReset();if(was){toast('Disconnected from the room');backToLobby();}renderRoom();
+  ws.onclose=function(){if(net.ws!==ws)return;var was=net.on;netReset();if(was){toast('Connection lost');backToLobby();}renderOnline();
     onStatus(opened?'Connection lost.':'Could not reach the game server. Online play needs the game opened from its Render address (the first connection can take a minute while the server wakes up).');};
   ws.onmessage=function(e){var m;try{m=JSON.parse(e.data);}catch(x){return;}netMsg(m);};}
-function slotOf(id){for(var i=0;i<8;i++)if(net.slots[i]&&net.slots[i].id===id)return i;return -1;}
-function freeSlot(team){for(var i=team*4;i<team*4+4;i++)if(!net.slots[i])return i;return -1;}
-function humans(team){var n=0;for(var i=team*4;i<team*4+4;i++)if(net.slots[i])n++;return n;}
-function sendRoster(){netSend('all',{k:'ros',sl:net.slots,busy:mode!=='lobby'&&mode!=='over'});renderRoom();}
-function cleanInfo(inf,id){inf=inf||{};return {id:id,name:String(inf.name||'Player').slice(0,12),w:String(inf.w||'kaito').slice(0,20),s:String(inf.s||'iron').slice(0,20)};}
-function netHero(){if(!net.on)return;if(net.host){var q=slotOf(net.id);if(q>=0){net.slots[q]=cleanInfo(myInfo(),net.id);sendRoster();}}else netSend('host',{k:'hero',info:myInfo()});}
+function findMatch(){onSaveFields();netConnect(function(){net.queue=true;net.qn=1;net.eta=null;wsSend({t:'queue',info:myInfo()});renderOnline();});}
+function netHero(){if(net.queue)wsSend({t:'info',info:myInfo()});}
 function netMsg(m){
-  var q,d;
-  if(m.t==='created'){net.on=net.host=true;net.guest=false;net.id=m.id;net.code=m.code;net.slots=[null,null,null,null,null,null,null,null];net.slots[0]=cleanInfo(myInfo(),m.id);net.slot=0;onStatus('');renderRoom();}
-  else if(m.t==='joined'){net.on=net.guest=true;net.host=false;net.id=m.id;net.code=m.code;onStatus('');renderRoom();}
-  else if(m.t==='error'){netReset();renderRoom();onStatus(m.msg);}
-  else if(m.t==='closed'){var was=net.on;netReset();renderRoom();if(was){toast('The host left — room closed');backToLobby();}}
-  else if(m.t==='peer'&&net.host){var tm=humans(1)<=humans(0)?1:0;q=freeSlot(tm);if(q<0)q=freeSlot(1-tm);if(q<0)return;net.slots[q]=cleanInfo(m.info,m.id);sendRoster();toast(net.slots[q].name+' joined');}
-  else if(m.t==='left'&&net.host){q=slotOf(m.id);if(q>=0){net.slots[q]=null;var lf=fighters[q];lf.net=null;lf.human=false;lf.windMul=1.6;sendRoster();}}
-  else if(m.t==='msg'){d=m.d||{};
-    if(net.host){q=slotOf(m.from);if(q<0)return;
-      if(d.k==='in'){var n=fighters[q].net;if(n){n.mx=Math.max(-1,Math.min(1,+d.mx||0));n.mz=Math.max(-1,Math.min(1,+d.mz||0));n.b=!!d.b;n.a=n.a||!!d.a;n.h=n.h||!!d.h;n.d=n.d||!!d.d;n.c=n.c||!!d.c;n.tg=d.tg|0;n.f=typeof d.f==='number'?d.f:null;n.last=time;}}
-      else if(d.k==='swap'&&(mode==='lobby'||mode==='over')){var o=freeSlot(q<4?1:0);if(o>=0){net.slots[o]=net.slots[q];net.slots[q]=null;sendRoster();}}
-      else if(d.k==='hero'){net.slots[q]=cleanInfo(d.info,m.from);sendRoster();}
-    }else if(net.guest){
-      if(d.k==='ros'){net.slots=d.sl||[];net.busy=!!d.busy;net.slot=Math.max(0,slotOf(net.id));renderRoom();}
-      else if(d.k==='start'){net.slots=d.sl||[];net.slot=Math.max(0,slotOf(net.id));netBegin();}
-      else if(d.k==='s'&&net.playing)netSnap(d);}}}
+  if(m.t==='q'){net.queue=true;net.qn=m.n|0;net.eta=typeof m.eta==='number'?m.eta:null;renderOnline();}
+  else if(m.t==='match'){net.queue=false;net.on=net.guest=true;net.slots=m.sl||[];net.slot=Math.max(0,Math.min(7,m.slot|0));renderOnline();netBegin();}
+  else if(m.t==='s'){if(net.playing&&m.d)netSnap(m.d);}
+  else if(m.t==='end'){if(net.on&&mode!=='over'){toast('The match ended');netLeave();}}
+  else if(m.t==='error'){net.queue=false;renderOnline();onStatus(String(m.msg||'').slice(0,140));}}
+function netIn(q,d){var n=fighters[q]&&fighters[q].net;if(!n||!d)return;
+  n.mx=Math.max(-1,Math.min(1,+d.mx||0));n.mz=Math.max(-1,Math.min(1,+d.mz||0));n.b=!!d.b;n.a=n.a||!!d.a;n.h=n.h||!!d.h;n.d=n.d||!!d.d;n.c=n.c||!!d.c;n.tg=d.tg|0;n.f=typeof d.f==='number'&&isFinite(d.f)?d.f:null;n.last=time;}
 function netApplyRoster(){for(var i=0;i<8;i++){var f=fighters[i],sl=net.slots[i];
   if(sl){applyHeroTo(f,sl.w,sl.s,sl.name);f.net=(net.host&&sl.id!==net.id)?{mx:0,mz:0,b:false,a:false,h:false,d:false,c:false,tg:-1,f:null,last:time}:null;}else{applyDefault(f);f.net=null;}}}
-function netStart(){if(!net.host)return;$('pon').classList.remove('open');$('over').style.display='none';net.slot=slotOf(net.id);netEv.length=0;netApplyRoster();netSend('all',{k:'start',sl:net.slots});startMatch();}
 function netBegin(){$('pon').classList.remove('open');$('over').style.display='none';netApplyRoster();document.body.classList.add('fight');score=[0,0];round=1;
-  resetRound();fighters.forEach(function(f){f.netInit=false;f.wm=1.6;});net.playing=true;netMode='';netRo='';mode='intro';drawScore();}
+  resetRound();fighters.forEach(function(f){f.netInit=false;f.wm=1.6;f.ps=null;f.pd=null;});player.wm=1/player.atkSpd;net.playing=true;netMode='';netRo='';mode='intro';drawScore();}
 function netInput(f){
   var n=f.net,inp={mx:n.mx,mz:n.mz,attack:n.a,heavy:n.h,dash:n.d,block:n.b};n.a=n.h=n.d=false;
   if(time-n.last>1){inp.mx=inp.mz=0;inp.block=false;}
@@ -1235,34 +1222,38 @@ function netInput(f){
   if(n.c){n.c=false;doCtx(f,inp);}
   return inp;}
 function netHostTick(){
-  if(mode==='lobby'||time-netLastSnap<.066)return;netLastSnap=time;var a=[],i,f;
+  if(mode==='lobby'||time-netLastSnap<.045)return;netLastSnap=time;var a=[],i,f;
   for(i=0;i<fighters.length;i++){f=fighters[i];a.push([r2(f.pos.x),r2(f.pos.z),r2(f.y),r2(f.yaw),STN.indexOf(f.state),r2(f.t),f.atk||'',Math.round(f.hp),Math.round(f.guard),(f.alive?1:0)|(f.win?2:0),f.on?houses.indexOf(f.on):-1,r2(f.speed),r2(f.windMul)]);}
   netSend('all',{k:'s',m:mode,r:round,sc:score,w:lastW,f:a,ev:netEv.splice(0,netEv.length),
     ro:ropes.map(function(R){return [houses.indexOf(R.h1),houses.indexOf(R.h2),R.ax,R.az,R.bx,R.bz,fighters.indexOf(R.owner)];}),ko:fighters.slice(0,8).map(function(g){return g.kos||0;})});}
 function netSnap(d){
-  var i,f,v,st;if(!d.f)return;
+  var i,f,v,st,skip,me=player;if(!d.f)return;
   round=d.r|0;if(d.sc)score=[d.sc[0]|0,d.sc[1]|0];
-  for(i=0;i<fighters.length&&i<d.f.length;i++){f=fighters[i];v=d.f[i];f.nx=v[0];f.nz=v[1];f.ny=v[2];f.nyaw=v[3];st=STN[v[4]]||'idle';
-    if(st!==f.state){f.state=st;f.t=v[5];}else if(Math.abs(f.t-v[5])>.18)f.t=v[5];
-    f.atk=ATK[v[6]]?v[6]:null;if(v[7]<f.hp-.5)f.flash=.1;f.hp=v[7];f.guard=v[8];f.alive=!!(v[9]&1);f.win=!!(v[9]&2);f.on=v[10]>=0?houses[v[10]]||null:null;f.speed=v[11];f.wm=v[12]||1.6;
+  for(i=0;i<fighters.length&&i<d.f.length;i++){f=fighters[i];v=d.f[i];f.nx=v[0];f.nz=v[1];f.ny=v[2];f.nyaw=v[3];st=STN[v[4]]||'idle';skip=false;
+    if(f===me&&f.ps){ // we already started this move on screen; wait for the server to catch up instead of snapping back
+      if(time>f.ps.until||(st!=='idle'&&st!=='block')){var same=st===f.ps.state;f.ps=null;if(same){if(ATK[v[6]])f.atk=v[6];skip=true;}}else skip=true;}
+    if(!skip){if(st!==f.state){f.state=st;f.t=v[5];}else if(Math.abs(f.t-v[5])>.18||(v[6]&&v[6]!==f.atk))f.t=v[5];f.atk=ATK[v[6]]?v[6]:null;}
+    if(v[7]<f.hp-.5)f.flash=.1;f.hp=v[7];f.guard=v[8];f.alive=!!(v[9]&1);f.win=!!(v[9]&2);f.on=v[10]>=0?houses[v[10]]||null:null;
+    if(!(f===me&&f.alive&&(f.state==='idle'||f.state==='block')))f.speed=v[11];
+    if(f!==me)f.wm=v[12]||1.6;
     if(!f.netInit){f.netInit=true;f.pos.x=f.nx;f.pos.z=f.nz;f.y=f.ny;f.yaw=f.nyaw;}}
   var rs=JSON.stringify(d.ro||[]);if(rs!==netRo){netRo=rs;clearRopes();(d.ro||[]).forEach(function(q){var h1=houses[q[0]],h2=houses[q[1]];if(!h1||!h2)return;
     var R=shootRope(null,{h1:h1,h2:h2,ax:q[2],az:q[3],bx:q[4],bz:q[5],len:Math.hypot(q[4]-q[2],q[5]-q[3])});R.owner=fighters[q[6]]||null;});}
   (d.ev||[]).forEach(function(e){var g;
-    if(e[0]==='s'){g=fighters[e[1]];if(g&&ATK[e[2]]){g.atk=e[2];slashFx(g,ATK[e[2]]);}}
+    if(e[0]==='s'){g=fighters[e[1]];if(g&&ATK[e[2]]){var keep=g.atk;g.atk=e[2];slashFx(g,ATK[e[2]]);g.atk=keep;}}
     else if(e[0]==='b')burst(e[1],e[2],e[3],e[4],e[5],e[6]);
     else if(e[0]==='r')ringFx(e[1],e[2],e[3]);
     else if(e[0]==='x'){if(SFXO[e[1]]&&e[1]!=='drum')SFXO[e[1]](e[2]>=0&&fighters[e[2]]?vol(fighters[e[2]]):1);}
     else if(e[0]==='f')feed(String(e[1]).slice(0,60));});
   if(d.m!==netMode){netMode=d.m;mode=d.m;
-    if(d.m==='intro'){drawScore();banner('Round '+round,'AZURE CLAN  vs  CRIMSON CLAN',1500);SFX.drum();camYaw=player.team?0:PI;camPitch=.3;camSnap=true;fighters.forEach(function(g){g.netInit=false;});
-      for(i=0;i<fighters.length;i++){f=fighters[i];v=d.f[i];if(v){f.pos.x=v[0];f.pos.z=v[1];f.y=v[2];f.yaw=v[3];f.netInit=true;}}}
+    if(d.m==='intro'){drawScore();banner('Round '+round,'AZURE CLAN  vs  CRIMSON CLAN',1500);SFX.drum();camYaw=player.team?0:PI;camPitch=.3;camSnap=true;
+      for(i=0;i<fighters.length;i++){f=fighters[i];v=d.f[i];f.ps=null;f.pd=null;if(v){f.pos.x=v[0];f.pos.z=v[1];f.y=v[2];f.yaw=v[3];f.state=STN[v[4]]||'idle';f.netInit=true;}}}
     else if(d.m==='fight'){banner('FIGHT!','',800);SFX.drum();}
     else if(d.m==='end'){drawScore();banner(d.w===player.team?'Round Won':'Round Lost',d.w===0?'THE AZURE CLAN STANDS':'THE CRIMSON CLAN STANDS',2200);SFX.drum();}
     else if(d.m==='over'){drawScore();showOver((d.ko&&d.ko[net.slot])|0);}}}
-function puppetStep(f,dt){
-  var k=1-Math.exp(-16*dt),tp=POSE.guard,rate=12,glow=0,a,w,rt,i;
-  if(f.netInit){f.pos.x+=(f.nx-f.pos.x)*k;f.pos.z+=(f.nz-f.pos.z)*k;f.y+=(f.ny-f.y)*k;f.yaw+=wrap(f.nyaw-f.yaw)*k;}
+function puppetStep(f,dt,self){
+  var k=1-Math.exp(-18*dt),tp=POSE.guard,rate=12,glow=0,a,w,rt,i;
+  if(f.netInit&&!self){f.pos.x+=(f.nx-f.pos.x)*k;f.pos.z+=(f.nz-f.pos.z)*k;f.y+=(f.ny-f.y)*k;f.yaw+=wrap(f.nyaw-f.yaw)*k;}
   f.t+=dt;if(f.flash>0){f.flash-=dt;var on=f.flash>0?.75:0;for(i=0;i<f.rig.mats.length;i++)f.rig.mats[i].emissive.setScalar(on);}
   if(f.state==='dead'){tp=POSE.dead;rate=7;f.rig.shadow.visible=f.t<.3;}
   else{f.rig.shadow.visible=true;
@@ -1280,26 +1271,38 @@ function puppetStep(f,dt){
   var kk=1-Math.exp(-rate*dt),p=f.pose;for(i=0;i<KEYS.length;i++){var ky=KEYS[i];p[ky]+=(tp[ky]-p[ky])*kk;}
   applyPose(f.rig,p);f.rig.root.position.set(f.pos.x,f.y,f.pos.z);f.rig.root.rotation.y=f.yaw;}
 function netGuestUpdate(dt){
-  for(var i=0;i<fighters.length;i++)puppetStep(fighters[i],dt);updateRopes(dt);lockT=null;
-  if(mode==='fight'&&player.alive){var inp=playerInput(player),edge=inp.attack||inp.heavy||inp.dash||inp.ctx;
-    if(edge||time-netLastIn>.033){netLastIn=time;netSend('host',{k:'in',mx:r2(inp.mx),mz:r2(inp.mz),b:inp.block,a:inp.attack,h:inp.heavy,d:inp.dash,c:!!inp.ctx,tg:inp.target?fighters.indexOf(inp.target):-1,f:inp.face===undefined?null:r2(inp.face)});}}
-  press.attack=press.heavy=press.dash=press.ctx=false;}
-function renderRoom(){
-  $('onA').style.display=net.on?'none':'';$('onB').style.display=net.on?'':'none';$('online').textContent=net.on?'ROOM '+net.code:'ONLINE';if(!net.on)return;
-  $('onCodeV').textContent=net.code;
-  for(var t=0;t<2;t++){var box=$('onT'+t);box.innerHTML='';for(var i=t*4;i<t*4+4;i++){var sl=net.slots[i],row=document.createElement('div');row.className='pl'+(sl?'':' bot');
-    row.textContent=sl?sl.name+' · '+byId(WARRIORS,sl.w).name:'Computer';if(sl&&(i===0&&false||sl.id===net.id)){var y=document.createElement('small');y.textContent='YOU';row.appendChild(y);}box.appendChild(row);}}
-  $('onStart').style.display=net.host?'':'none';
-  $('onWait').textContent=net.host?'Share the room code, then start when everyone is in.':(net.busy?'A match is in progress — you will be in the next one.':'Waiting for the host to start…');}
-$('online').addEventListener('click',function(){$('onName').value=save.pname||'';$('onSrv').value=save.srv||'';renderRoom();$('pon').classList.add('open');});
-$('xon').addEventListener('click',function(){$('pon').classList.remove('open');resize();});
+  var me=player,i,inp=null,m,c;lockT=null;
+  if(mode==='fight'&&me.alive){inp=playerInput(me);
+    if(inp.attack||inp.heavy||inp.dash||inp.ctx||time-netLastIn>.033){netLastIn=time;wsSend({t:'in',mx:r2(inp.mx),mz:r2(inp.mz),b:inp.block,a:inp.attack,h:inp.heavy,d:inp.dash,c:!!inp.ctx,tg:inp.target?fighters.indexOf(inp.target):-1,f:inp.face===undefined?null:r2(inp.face)});}
+    // show our own moves at once instead of waiting for the round trip
+    if(!me.ps&&(me.state==='idle'||me.state==='block')){
+      if(inp.dash&&time>(me.pdCd||0)){m=Math.hypot(inp.mx,inp.mz);me.pd={x:m>.1?inp.mx/m:-Math.sin(me.yaw),z:m>.1?inp.mz/m:-Math.cos(me.yaw),t:0};me.pdCd=time+.75;me.ps={state:'dash',until:time+.45};me.state='dash';me.t=0;}
+      else if(me.state==='idle'&&(inp.attack||inp.heavy)){me.ps={state:'attack',until:time+.45};me.state='attack';me.atk=inp.heavy?'H':'L1';me.t=0;if(lockT)me.yaw=angTo(me,lockT);}}}
+  var free=!!inp&&!me.pd&&(me.state==='idle'||me.state==='block');
+  if(me.pd){me.pd.t+=dt;me.pos.x+=me.pd.x*12.5*dt;me.pos.z+=me.pd.z*12.5*dt;me.yaw=turn(me.yaw,Math.atan2(me.pd.x,me.pd.z),18*dt);if(me.pd.t>.24)me.pd=null;}
+  else if(free){m=Math.hypot(inp.mx,inp.mz);
+    if(m>.05){var kq=Math.min(1,m),sp=me.state==='block'?1.8:5.3*me.spd;me.pos.x+=inp.mx/m*kq*sp*dt;me.pos.z+=inp.mz/m*kq*sp*dt;me.speed=kq*sp;if(inp.face===undefined&&me.state==='idle')me.yaw=turn(me.yaw,Math.atan2(inp.mx,inp.mz),13*dt);}else me.speed=0;
+    if(inp.face!==undefined)me.yaw=turn(me.yaw,inp.face,10*dt);}
+  if(me.netInit){var ex=me.nx-me.pos.x,ez=me.nz-me.pos.z,er=Math.hypot(ex,ez);
+    if(free||me.pd)c=er>3.5?1:Math.min(1,(er>1.5?5:1.2)*dt);else{c=1-Math.exp(-18*dt);me.yaw+=wrap(me.nyaw-me.yaw)*c;}
+    me.pos.x+=ex*c;me.pos.z+=ez*c;me.y+=(me.ny-me.y)*(1-Math.exp(-18*dt));
+    if((free||me.pd)&&!me.on&&me.y<.3)collide(me);}
+  for(i=0;i<fighters.length;i++)puppetStep(fighters[i],dt,fighters[i]===me);
+  updateRopes(dt);press.attack=press.heavy=press.dash=press.ctx=false;}
+function renderOnline(){var q=net.queue;$('onA').style.display=q?'none':'';$('onB').style.display=q?'':'none';$('online').textContent=q?'SEARCHING…':'ONLINE';
+  if(q)$('onQ').textContent=net.qn>1?net.qn+' players found'+(net.eta!==null?' · starting in '+net.eta+'s':''):'Waiting for another player to search…';}
 function onSaveFields(){save.pname=String($('onName').value||'').trim().slice(0,12);save.srv=String($('onSrv').value||'').trim().slice(0,120);persist();}
-$('onCreate').addEventListener('click',function(){initAudio();onSaveFields();netConnect(function(){net.ws.send(JSON.stringify({t:'create'}));});});
-$('onJoin').addEventListener('click',function(){initAudio();onSaveFields();var c=String($('onCode').value||'').trim().toUpperCase();if(c.length!==4){onStatus('Enter the 4-letter room code');return;}
-  netConnect(function(){net.ws.send(JSON.stringify({t:'join',code:c,info:myInfo()}));});});
-$('onLeave').addEventListener('click',function(){netLeave();});
-$('onStart').addEventListener('click',function(){initAudio();goFull(false);netStart();});
-$('onSwap').addEventListener('click',function(){if(net.host){var q=slotOf(net.id),o=freeSlot(q<4?1:0);if(o>=0){net.slots[o]=net.slots[q];net.slots[q]=null;net.slot=o;sendRoster();}}else netSend('host',{k:'swap'});});
+$('online').addEventListener('click',function(){$('onName').value=save.pname||'';$('onSrv').value=save.srv||'';renderOnline();$('pon').classList.add('open');});
+$('xon').addEventListener('click',function(){$('pon').classList.remove('open');resize();});
+$('onFind').addEventListener('click',function(){initAudio();findMatch();});
+$('onCancel').addEventListener('click',function(){wsSend({t:'leave'});net.queue=false;renderOnline();});
+if(window.__HEADLESS){ // running on the server as the referee for one match
+  net.on=net.host=net.headless=true;net.id=-1;net.slot=0;
+  netSend=function(to,d){window.__HEADLESS.out(d);};
+  window.__HEADLESS.api={
+    start:function(sl){net.slots=[];for(var i=0;i<8;i++)net.slots[i]=sl[i]?cleanInfo(sl[i],sl[i].id):null;netEv.length=0;netApplyRoster();startMatch();},
+    input:function(q,d){netIn(q|0,d);},
+    drop:function(q){q=q|0;if(q<0||q>7)return;net.slots[q]=null;var f=fighters[q];f.net=null;f.human=false;f.windMul=1.6;}};}
 
 /* ---------- markers ---------- */
 function ringMesh(col,a,b){var m=new T.Mesh(new T.RingGeometry(a,b,32),new T.MeshBasicMaterial({color:col,transparent:true,opacity:.9,depthWrite:false}));m.rotation.x=-PI/2;m.position.y=.04;scene.add(m);return m;}
@@ -1320,7 +1323,7 @@ function update(dt){
     if(best){setPlayer(best);banner(best.name,'YOU FIGHT ON',900,true);}}}
   lockT=null;
   for(i=0;i<fighters.length;i++){f=fighters[i];var inp=NOIN;
-    if((fighting||mode==='roam')&&f.alive)inp=f.isPlayer?playerInput(f):f.net?netInput(f):aiInput(f,dt);
+    if((fighting||mode==='roam')&&f.alive)inp=f.net?netInput(f):(f.isPlayer&&!net.headless)?playerInput(f):aiInput(f,dt);
     stepFighter(f,inp,dt);}
   press.attack=press.heavy=press.dash=press.ctx=false;updateRopes(dt);
   for(i=0;i<fighters.length;i++)for(j=i+1;j<fighters.length;j++){var a=fighters[i],b=fighters[j];if(!a.alive||!b.alive||Math.abs(a.y-b.y)>1||a.rope||b.rope||a.state==='climb'||b.state==='climb')continue;
